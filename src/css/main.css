@@ -1,0 +1,41 @@
+.user-input {
+  display: flex;
+  justify-content: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 20rem;
+  gap: 1rem;
+  border: 1px solid #ccc;
+  padding: 1rem;
+}
+
+.lift-simultion {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.floor {
+  border-bottom: 1px solid #111;
+  height: 4rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  border-radius: 0.5rem;
+  padding: 0.3rem;
+  cursor: pointer;
+}
+
+.lift {
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  border: 1px solid #111;
+  width: 3.5rem;
+  height: 5rem;
+  background-color: royalblue;
+}
