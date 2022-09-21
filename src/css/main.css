@@ -38,4 +38,5 @@
   width: 3.5rem;
   height: 5rem;
   background-color: royalblue;
+  transition: bottom 5s linear;
 }

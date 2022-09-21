@@ -2,6 +2,9 @@ const noOfFloorsInput = document.querySelector(".no-of-floors");
 const noOfLiftsInput = document.querySelector(".no-of-lifts");
 const generateSimulation = document.querySelector(".btn-submit");
 const liftSimulation = document.querySelector(".lift-simultion");
+let floorLiftControllers = null;
+let allLifts = [];
+const allLiftState = [];
 
 let noOfFloors = 0;
 let noOfLifts = 0;
@@ -10,39 +13,11 @@ const generateFloors = (noOfFloors) => {
   let floors = "";
 
   for (let i = noOfFloors; i >= 1; i--) {
-    if (i === noOfFloors) {
-      floors += `
-        <div class="floor">
-            <div class="floor-controller">
-                <button class="btn">DOWN</button>
-            </div>
-            <div class="floor-name">
-                <p>Floor ${i}</p>
-            </div>
-        </div>
-      `;
-      continue;
-    }
-
-    if (i === 1) {
-      floors += `
-        <div class="floor">
-            <div class="floor-controller">
-                <button class="btn">UP</button>
-            </div>
-            <div class="floor-name">
-                <p>Floor ${i}</p>
-            </div>
-        </div>
-      `;
-      continue;
-    }
-
     floors += `
-        <div class="floor">
+        <div class="floor" data-floor=${i}>
             <div class="floor-controller">
-                <button class="btn">UP</button>
-                <button class="btn">DOWN</button>
+                <button class="btn" data-up=${i}>UP</button>
+                <button class="btn" data-down=${i}>DOWN</button>
             </div>
             <div class="floor-name">
                 <p>Floor ${i}</p>
@@ -61,10 +36,15 @@ const generateLifts = (noOfLifts) => {
   for (let i = 0; i < noOfLifts; i++) {
     const lift = document.createElement("div");
     lift.classList.add("lift");
-    lift.setAttribute("data-floor", 0);
-    lift.setAttribute("data-tag", i + 1);
+    lift.setAttribute("data-currentFloor", 1);
+    lift.setAttribute("data-liftNo", i + 1);
     lift.style.left = 15 * (i + 1) + `%`;
     liftEles.appendChild(lift);
+    const liftState = {
+      LiftNo: i + 1,
+      isMoving: false,
+    };
+    allLiftState.push(liftState);
   }
 
   return liftEles;
@@ -92,6 +72,15 @@ const generateSimulationHandler = (e) => {
   const liftEles = generateLifts(noOfLifts);
 
   liftSimulation.appendChild(liftEles);
+
+  floorLiftControllers = document.querySelectorAll(".btn");
+  allLifts = document.querySelectorAll(".lift");
+
+  if (floorLiftControllers) {
+    for (let btn of floorLiftControllers) {
+      btn.addEventListener("click", moveLiftHandler);
+    }
+  }
 };
 
 const inputChangeHandler = (e, type) => {
@@ -101,6 +90,24 @@ const inputChangeHandler = (e, type) => {
     noOfLifts = +e.target.value;
   }
 };
+
+const moveLiftHandler = (e) => {
+  const up = e.target.dataset.up;
+  const down = e.target.dataset.down;
+  const liftIndex = getFreeLiftIndex();
+  const currentLift = allLifts[liftIndex];
+
+  if (currentLift) {
+    allLiftState[liftIndex].isMoving = true;
+    currentLift.style.bottom = ((up ?? down) - 1) * 96 + "px";
+    setTimeout(() => {
+      allLiftState[liftIndex].isMoving = false;
+      currentLift.dataset.currentfloor = up ?? down;
+    }, 5000);
+  }
+};
+
+const getFreeLiftIndex = () => allLiftState.findIndex((lift) => !lift.isMoving);
 
 noOfFloorsInput.addEventListener("input", (event) =>
   inputChangeHandler(event, "floorChange")
