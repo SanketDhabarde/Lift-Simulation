@@ -22,8 +22,8 @@ const generateFloors = (noOfFloors) => {
     floors += `
         <div class="floor" data-floor=${i}>
             <div class="floor-controller">
-                <button class="btn" data-up=${i}>UP</button>
-                <button class="btn" data-down=${i}>DOWN</button>
+                <button class="btn" data-up=${i}>🔼</button>
+                <button class="btn" data-down=${i}>🔽</button>
             </div>
             <div class="floor-name">
                 <p>Floor ${i}</p>
@@ -61,22 +61,39 @@ const generateLifts = (noOfLifts) => {
   return liftEles;
 };
 
-const generateSimulationHandler = (e) => {
-  e.preventDefault();
+const validateInput = () => {
+  let isValidInput = true;
+
   if (!noOfFloors && !noOfLifts) {
     alert("please add Number of lifts and floors");
-    return;
+    isValidInput = false;
+    return isValidInput;
   }
 
   if (!noOfFloors) {
     alert("Please add Number of floors");
-    return;
+    isValidInput = false;
+    return isValidInput;
   }
 
   if (!noOfLifts) {
     alert("Please add Number of lifts");
-    return;
+    isValidInput = false;
+    return isValidInput;
   }
+
+  if (noOfLifts > 5) {
+    alert("Our limitation is atmost 5 lifts. Sorry");
+    isValidInput = false;
+    return isValidInput;
+  }
+
+  return isValidInput;
+};
+
+const generateSimulationHandler = (e) => {
+  e.preventDefault();
+  if(!validateInput()) return;
 
   liftSimulation.innerHTML = generateFloors(noOfFloors);
 
@@ -129,7 +146,7 @@ const moveLiftHandler = (e) => {
 const doorCloseHandler = (lift, liftIndex) => {
   allLiftState[liftIndex].doorState = DOOR_STATE.closing;
   doorSimulation(lift.children, DOOR_STATE.closing);
-  
+
   setTimeout(() => {
     allLiftState[liftIndex].doorState = DOOR_STATE.none;
   }, 2500);
@@ -139,7 +156,7 @@ const doorOpenHandler = (lift, liftIndex) => {
   return new Promise((resolve, reject) => {
     allLiftState[liftIndex].doorState = DOOR_STATE.opening;
     doorSimulation(lift.children, DOOR_STATE.opening);
-    
+
     setTimeout(() => {
       resolve({ lift, liftIndex });
     }, 2500);
