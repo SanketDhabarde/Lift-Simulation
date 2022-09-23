@@ -51,9 +51,10 @@ const generateLifts = (noOfLifts) => {
     lift.style.left = 15 * (i + 1) + `%`;
     liftEles.appendChild(lift);
     const liftState = {
-      LiftNo: i + 1,
+      liftNo: i + 1,
       isMoving: false,
       doorState: DOOR_STATE.none,
+      currentFloor: "1",
     };
     allLiftState.push(liftState);
   }
@@ -93,7 +94,7 @@ const validateInput = () => {
 
 const generateSimulationHandler = (e) => {
   e.preventDefault();
-  if(!validateInput()) return;
+  if (!validateInput()) return;
 
   liftSimulation.innerHTML = generateFloors(noOfFloors);
 
@@ -122,7 +123,7 @@ const inputChangeHandler = (e, type) => {
 const moveLiftHandler = (e) => {
   const up = e.target.dataset.up;
   const down = e.target.dataset.down;
-  const liftIndex = getFreeLiftIndex();
+  const liftIndex = getFreeLiftIndex(up || down);
   const currentLift = allLifts[liftIndex];
   const liftDurationPerFloor =
     Math.abs(currentLift.dataset.currentfloor - (up ?? down)) * 2; // 2 sec per floor
@@ -139,6 +140,7 @@ const moveLiftHandler = (e) => {
         doorCloseHandler(lift, liftIndex)
       );
       currentLift.dataset.currentfloor = up ?? down;
+      allLiftState[liftIndex].currentFloor = up ?? down;
     }, liftDurationPerFloor * 1000);
   }
 };
@@ -182,10 +184,24 @@ const doorSimulation = (doors, state) => {
   }
 };
 
-const getFreeLiftIndex = () =>
-  allLiftState.findIndex(
+const getFreeLiftIndex = (requestedFloor) => {
+  const freeLifts = allLiftState.filter(
     (lift) => !lift.isMoving && lift.doorState === DOOR_STATE.none
   );
+  let minDifference = requestedFloor;
+  let liftNo = null;
+
+  for (let i = 0; i < freeLifts.length; i++) {
+    let differenceWithEachLift = Math.abs(
+      requestedFloor - freeLifts[i].currentFloor
+    );
+    if (differenceWithEachLift < minDifference) {
+      minDifference = differenceWithEachLift;
+      liftNo = freeLifts[i].liftNo;
+    }
+  }
+  return allLiftState.findIndex((lift) => lift.liftNo === liftNo);
+};
 
 noOfFloorsInput.addEventListener("input", (event) =>
   inputChangeHandler(event, "floorChange")
