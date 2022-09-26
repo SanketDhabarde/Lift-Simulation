@@ -1,6 +1,20 @@
+:root {
+  --bg-color: #1a202c;
+  --text-color: #fff;
+  --secondary-color: #35435f;
+  --primary-color: #49a0eb;
+  --primary-text: #000000eb;
+  --lift-color: #1B88E6;
+}
+
+body {
+  background-color: var(--bg-color);
+}
+
 .user-input {
   display: flex;
   justify-content: center;
+  color: var(--text-color);
 }
 
 .form {
@@ -8,8 +22,23 @@
   flex-direction: column;
   width: 20rem;
   gap: 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--secondary-color);
+  border-radius: 0.5rem;
   padding: 1rem;
+}
+
+.form input {
+  background: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--secondary-color);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.form label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .lift-simultion {
@@ -19,11 +48,12 @@
 }
 
 .floor {
-  border-bottom: 1px solid #111;
+  border-bottom: 1px solid var(--secondary-color);
   height: 4rem;
   margin-top: 2rem;
   display: flex;
   justify-content: space-between;
+  color: var(--text-color);
 }
 
 .floor-controller {
@@ -39,11 +69,17 @@
   cursor: pointer;
 }
 
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--primary-text);
+  padding: 0.5rem;
+}
+
 .lift {
   position: absolute;
   bottom: 0;
   left: 10%;
-  border-top: 1px solid #111;
+  border-top: 1px solid var(--secondary-color);
   width: 3.5rem;
   height: 5rem;
   display: flex;
@@ -52,14 +88,14 @@
 }
 
 .left-door {
-  background-color: royalblue;
+  background-color: var(--lift-color);
   width: 100%;
-  border-right: 1px solid black;
+  border-right: 1px solid var(--secondary-color);
   transition: transform 2.5s linear;
 }
 
 .right-door {
-  background-color: royalblue;
+  background-color: var(--lift-color);
   width: 100%;
   transition: transform 2.5s linear;
 }
