@@ -19,17 +19,41 @@ const generateFloors = (noOfFloors) => {
   let floors = "";
 
   for (let i = noOfFloors; i >= 1; i--) {
-    floors += `
-        <div class="floor" data-floor=${i}>
-            <div class="floor-controller">
-                <button class="btn" data-up=${i}>🔼</button>
-                <button class="btn" data-down=${i}>🔽</button>
-            </div>
-            <div class="floor-name">
-                <p>Floor ${i}</p>
-            </div>
-        </div>
-      `;
+    if (i == 1) {
+      floors += `
+          <div class="floor" data-floor=${i}>
+              <div class="floor-controller">
+                  <button class="btn btn-lift-controller" data-up=${i}>🔼</button>
+              </div>
+              <div class="floor-name">
+                  <p>Floor ${i}</p>
+              </div>
+          </div>
+        `;
+    } else if (i === noOfFloors) {
+      floors += `
+          <div class="floor" data-floor=${i}>
+              <div class="floor-controller">
+                  <button class="btn btn-lift-controller" data-down=${i}>🔽</button>
+              </div>
+              <div class="floor-name">
+                  <p>Floor ${i}</p>
+              </div>
+          </div>
+        `;
+    } else {
+      floors += `
+          <div class="floor" data-floor=${i}>
+              <div class="floor-controller">
+                  <button class="btn btn-lift-controller" data-up=${i}>🔼</button>
+                  <button class="btn btn-lift-controller" data-down=${i}>🔽</button>
+              </div>
+              <div class="floor-name">
+                  <p>Floor ${i}</p>
+              </div>
+          </div>
+        `;
+    }
   }
 
   return floors;
@@ -89,6 +113,12 @@ const validateInput = () => {
     return isValidInput;
   }
 
+  if (noOfFloors < 0 || noOfLifts < 0) {
+    alert("Please enter valid numbers");
+    isValidInput = false;
+    return isValidInput;
+  }
+
   return isValidInput;
 };
 
@@ -102,12 +132,14 @@ const generateSimulationHandler = (e) => {
 
   liftSimulation.appendChild(liftEles);
 
-  floorLiftControllers = document.querySelectorAll(".btn");
+  floorLiftControllers = document.querySelectorAll(".btn-lift-controller");
   allLifts = document.querySelectorAll(".lift");
 
   if (floorLiftControllers) {
     for (let btn of floorLiftControllers) {
-      btn.addEventListener("click", moveLiftHandler);
+      btn.addEventListener("click", (e) =>
+        moveLiftHandler(e.target.dataset.up || e.target.dataset.down)
+      );
     }
   }
 };
@@ -120,29 +152,35 @@ const inputChangeHandler = (e, type) => {
   }
 };
 
-const moveLiftHandler = (e) => {
-  const up = e.target.dataset.up;
-  const down = e.target.dataset.down;
-  const liftIndex = getFreeLiftIndex(up || down);
+const moveLiftHandler = (direction) => {
+  const liftIndex = getFreeLiftIndex(direction);
   const currentLift = allLifts[liftIndex];
-  const liftDurationPerFloor =
-    Math.abs(currentLift.dataset.currentfloor - (up ?? down)) * 2; // 2 sec per floor
 
-  if (currentLift) {
-    allLiftState[liftIndex].isMoving = true;
-    currentLift.style.transitionDuration = liftDurationPerFloor + "s";
-    currentLift.style.transitionTimingFunction = "linear";
-    currentLift.style.bottom = ((up ?? down) - 1) * 97 + "px";
-
+  if (liftIndex !== -1) {
+    moveLift(currentLift, liftIndex, direction);
+  } else {
     setTimeout(() => {
-      allLiftState[liftIndex].isMoving = false;
-      doorOpenHandler(currentLift, liftIndex).then(({ lift, liftIndex }) =>
-        doorCloseHandler(lift, liftIndex)
-      );
-      currentLift.dataset.currentfloor = up ?? down;
-      allLiftState[liftIndex].currentFloor = up ?? down;
-    }, liftDurationPerFloor * 1000);
+      moveLiftHandler(direction);
+    }, 1000);
   }
+};
+
+const moveLift = (currentLift, liftIndex, direction) => {
+  const liftDurationPerFloor =
+    Math.abs(currentLift.dataset.currentfloor - direction) * 2; // 2 sec per floor
+  allLiftState[liftIndex].isMoving = true;
+  currentLift.style.transitionDuration = liftDurationPerFloor + "s";
+  currentLift.style.transitionTimingFunction = "linear";
+  currentLift.style.bottom = (direction - 1) * 97 + "px";
+
+  setTimeout(() => {
+    allLiftState[liftIndex].isMoving = false;
+    doorOpenHandler(currentLift, liftIndex).then(({ lift, liftIndex }) =>
+      doorCloseHandler(lift, liftIndex)
+    );
+    currentLift.dataset.currentfloor = direction;
+    allLiftState[liftIndex].currentFloor = direction;
+  }, liftDurationPerFloor * 1000);
 };
 
 const doorCloseHandler = (lift, liftIndex) => {
@@ -167,6 +205,7 @@ const doorOpenHandler = (lift, liftIndex) => {
 
 const doorSimulation = (doors, state) => {
   const [leftDoor, rightDoor] = doors;
+
   switch (state) {
     case DOOR_STATE.opening:
       {
@@ -188,7 +227,8 @@ const getFreeLiftIndex = (requestedFloor) => {
   const freeLifts = allLiftState.filter(
     (lift) => !lift.isMoving && lift.doorState === DOOR_STATE.none
   );
-  let minDifference = requestedFloor;
+
+  let minDifference = Infinity;
   let liftNo = null;
 
   for (let i = 0; i < freeLifts.length; i++) {
@@ -200,12 +240,14 @@ const getFreeLiftIndex = (requestedFloor) => {
       liftNo = freeLifts[i].liftNo;
     }
   }
+
   return allLiftState.findIndex((lift) => lift.liftNo === liftNo);
 };
 
 noOfFloorsInput.addEventListener("input", (event) =>
   inputChangeHandler(event, "floorChange")
 );
+
 noOfLiftsInput.addEventListener("input", (event) =>
   inputChangeHandler(event, "liftChange")
 );
